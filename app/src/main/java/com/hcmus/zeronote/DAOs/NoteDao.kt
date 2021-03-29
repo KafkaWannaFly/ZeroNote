@@ -8,6 +8,9 @@ interface NoteDao {
 	@Query("SELECT * FROM notes ORDER BY date DESC")
 	fun getAllNotesSync(): List<Note>
 	
+	@Query("SELECT * FROM notes ORDER BY date DESC")
+	suspend fun getAllNotesAsync(): List<Note>
+	
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	suspend fun insertNote(note: Note)
 	

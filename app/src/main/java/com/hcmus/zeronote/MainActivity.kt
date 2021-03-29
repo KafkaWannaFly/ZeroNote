@@ -6,29 +6,32 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.Spinner
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
 import com.hcmus.zeronote.activities.NoteActivity
 import com.hcmus.zeronote.adapters.NotesAdapter
 import com.hcmus.zeronote.entities.Note
-import com.hcmus.zeronote.viewmodels.NoteViewModel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.CompletableFuture
-import java.util.function.Consumer
+import com.hcmus.zeronote.viewmodels.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 	
 	private lateinit var recyclerView: RecyclerView;
 	private lateinit var notesAdapter: NotesAdapter;
-	private var notes = mutableListOf<Note>()
-	private val noteViewModel = NoteViewModel();
+	private lateinit var searchText: EditText;
+	
+	private var displayNotes = mutableListOf<Note>()
+	private var dbNotes = listOf<Note>()
+	private val mainViewModel = MainViewModel()
+	
 	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
+		
+		recyclerView = findViewById(R.id.recyclerView);
 		
 		val spinner: Spinner = findViewById(R.id.dropdownMenu);
 		ArrayAdapter.createFromResource(this,
@@ -39,8 +42,7 @@ class MainActivity : AppCompatActivity() {
 			spinner.setSelection(0)
 		}
 		
-		recyclerView = findViewById(R.id.recyclerView);
-		notesAdapter = NotesAdapter(this, notes);
+		notesAdapter = NotesAdapter(this, displayNotes)
 		recyclerView.adapter = notesAdapter;
 		
 		val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -48,17 +50,40 @@ class MainActivity : AppCompatActivity() {
 		
 		recyclerView.layoutManager = layoutManager
 		
-		
+		searchText = findViewById(R.id.searchText)
+		searchText.addTextChangedListener(onTextChanged = {text, start, before, count ->
+			if (!text.isNullOrEmpty()) {
+				val searchBy = spinner.selectedItemPosition
+				val filteredNotes: List<Note>;
+				
+				if (searchBy == 0) {
+					filteredNotes = dbNotes.filter {
+						it.title.contains(text, true) || it.content.contains(text, true)
+					}
+				}
+				else {
+					filteredNotes = dbNotes.filter {
+						it.tag.contains(text, true)
+					}
+				}
+				
+				Log.d("SearchResult", "Search ${filteredNotes.size} notes")
+				
+				displayNotes.clear()
+				displayNotes.addAll(filteredNotes)
+			}
+			else {
+				displayNotes.clear()
+				displayNotes.addAll(dbNotes)
+			}
+			
+			notesAdapter.notifyDataSetChanged()
+		})
 	}
 	
 	override fun onStart() {
 		super.onStart()
-		
-		CompletableFuture.runAsync {
-			runBlocking {
-				launch {
-					// Run only once for test
-//					val testNotes: List<Note> = listOf(
+		//					val testNotes: List<Note> = listOf(
 //						Note().apply {
 //							title = "Thu vũ"
 //							tag = "poem"
@@ -88,20 +113,17 @@ class MainActivity : AppCompatActivity() {
 //						}
 //					)
 //					noteViewModel.saveNotes(this@MainActivity, testNotes)
-					
-					val dbNotes = noteViewModel.getNotes(this@MainActivity);
-					notes.clear()
-					notes.addAll(dbNotes)
-					Log.d("NoteDB", "Get notes")
-				}
-				
-			}
-		}.thenAccept {
-			notesAdapter.notifyDataSetChanged()
-			recyclerView.smoothScrollToPosition(0)
-			
-			Log.d("NoteDB", "Notes: $notes")
-		}
+		this.dbNotes = mainViewModel.getNotes(this)
+		
+		displayNotes.clear()
+		displayNotes.addAll(dbNotes)
+		
+		notesAdapter.notifyDataSetChanged()
+		
+		Log.d("NoteDB", "Founds ${
+			displayNotes.size
+		} notes")
+		
 	}
 	
 	fun onCreateNote(v: View) {

@@ -57,6 +57,8 @@ class NoteActivity : AppCompatActivity() {
 					"${content.trim().split(" ").size} words | " +
 					"${noteViewModel.characterCount.value} characters";
 			customInfoText.text = str;
+		}?.also {
+			noteViewModel.isDeletable.value = true
 		}
 		
 		// Require to fill out 3 fields to save or delete

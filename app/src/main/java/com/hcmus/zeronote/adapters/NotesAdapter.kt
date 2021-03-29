@@ -13,7 +13,7 @@ import com.hcmus.zeronote.R
 import com.hcmus.zeronote.activities.NoteActivity
 import com.hcmus.zeronote.entities.Note
 
-class NotesAdapter(val context: Context, private val notes: MutableList<Note>) : RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
+class NotesAdapter(val context: Context, private val notes: List<Note>) : RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
 	
 	class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 		lateinit var view: LinearLayout;
