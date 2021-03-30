@@ -203,6 +203,7 @@ class NoteActivity : AppCompatActivity() {
 		}
 	}
 	
+	@SuppressLint("ClickableViewAccessibility")
 	fun listenKeyboardAppear(): Unit {
 		
 		val keyboardSupportLayout: View = findViewById(R.id.keyBoardSupportLayout)
@@ -232,23 +233,34 @@ class NoteActivity : AppCompatActivity() {
 		}
 		
 		// We need to know what EditText is using
-		titleText.setOnClickListener {
+		titleText.setOnTouchListener { v, event ->
+			Log.d("IndentButton", "Tag touched!")
+			
 			lastFocusedEditText = titleText
+			return@setOnTouchListener false
 		}
 		
-		tagText.setOnClickListener {
+		tagText.setOnTouchListener { v, event ->
+			Log.d("IndentButton", "Tag touched!")
+			
 			lastFocusedEditText = tagText
+			return@setOnTouchListener false
 		}
 		
-		contentText.setOnClickListener {
+		contentText.setOnTouchListener { v, event ->
+			Log.d("IndentButton", "Content touched!")
+			
 			lastFocusedEditText = contentText
+			return@setOnTouchListener false
 		}
 		
 		val indentButton : View = findViewById(R.id.indentButton)
 		indentButton.setOnClickListener {
 			lastFocusedEditText?.apply {
-				val currentCursorPosition = selectionStart
-				text.insert(currentCursorPosition, "    ");
+				Log.d("IndentButton", "Start at $selectionStart. End at $selectionEnd")
+				val currentCursorPosition = selectionEnd
+				text = text.insert(currentCursorPosition, "    ");
+				setSelection(currentCursorPosition + 4)
 			}
 			
 		}

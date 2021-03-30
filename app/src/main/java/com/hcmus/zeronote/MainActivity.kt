@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.hcmus.zeronote.activities.NoteActivity
@@ -79,6 +81,25 @@ class MainActivity : AppCompatActivity() {
 			
 			notesAdapter.notifyDataSetChanged()
 		})
+		
+		spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+			override fun onItemSelected(
+				parent: AdapterView<*>?,
+				view: View?,
+				position: Int,
+				id: Long,
+			) {
+				// Just want to notify search text that it should filter again
+				searchText.text.insert(searchText.text.length, " ")
+				searchText.text.delete(searchText.text.length - 1, searchText.text.length)
+			}
+			
+			override fun onNothingSelected(parent: AdapterView<*>?) {
+				/* no-op */
+			}
+			
+			
+		}
 	}
 	
 	override fun onStart() {
