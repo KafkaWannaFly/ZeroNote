@@ -25,4 +25,5 @@
     <string name="lorem_ipsum">Lorem ipsum …</string>
     <string name="sample_text_holder">Sat 11:30:00 30/4/1975 | 150 words | 500 characters</string>
     <string name="horizontal_line">Horizontal line</string>
+    <string name="indent_button">Indent button</string>
 </resources>

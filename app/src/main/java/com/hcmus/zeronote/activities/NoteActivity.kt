@@ -1,7 +1,11 @@
 package com.hcmus.zeronote.activities
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
+import android.util.DisplayMetrics
+import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
@@ -10,15 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Observer
+import com.google.android.material.internal.ViewUtils.dpToPx
 import com.hcmus.zeronote.R
 import com.hcmus.zeronote.entities.Note
 import com.hcmus.zeronote.fragments.ConfirmFragment
 import com.hcmus.zeronote.viewmodels.NoteViewModel
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.*
-import java.util.concurrent.CompletableFuture
+
 
 class NoteActivity : AppCompatActivity() {
 	private var note: Note? = null;
@@ -29,6 +33,8 @@ class NoteActivity : AppCompatActivity() {
 	private lateinit var contentText: EditText
 	private lateinit var customInfoText: TextView
 	
+	private var lastFocusedEditText: EditText? = null;
+	
 	private lateinit var date: String;
 	
 	@SuppressLint("ResourceType")
@@ -38,7 +44,8 @@ class NoteActivity : AppCompatActivity() {
 		
 		this.note = this.intent.getSerializableExtra("Note") as Note?;
 		
-		this.date = SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault()).format(Date())
+		this.date =
+				SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault()).format(Date())
 		
 		val saveButton: ImageView = findViewById(R.id.saveButton);
 		val deleteButton: ImageView = findViewById(R.id.deleteNoteButton);
@@ -127,8 +134,6 @@ class NoteActivity : AppCompatActivity() {
 			}
 		})
 		
-		
-		
 		noteViewModel.characterCount.observe(this, Observer { count ->
 			val str = "$date | ${noteViewModel.wordCount} words | $count characters";
 			customInfoText.text = str;
@@ -139,6 +144,7 @@ class NoteActivity : AppCompatActivity() {
 			customInfoText.text = str;
 		})
 		
+		listenKeyboardAppear()
 	}
 	
 	private fun goBack(v: View) {
@@ -146,7 +152,7 @@ class NoteActivity : AppCompatActivity() {
 	}
 	
 	fun onSaveButtonClick(v: View) {
-		if(note == null) {
+		if (note == null) {
 			note = Note();
 		}
 		
@@ -191,9 +197,60 @@ class NoteActivity : AppCompatActivity() {
 				})
 			
 			confirmDelete.show(supportFragmentManager, "confirm_fragment")
-		} else {
+		}
+		else {
 			goBack(v)
 		}
 	}
 	
+	fun listenKeyboardAppear(): Unit {
+		
+		val keyboardSupportLayout: View = findViewById(R.id.keyBoardSupportLayout)
+		val noteActivityView: View = findViewById(R.id.noteRootLayout)
+		
+		// Listen when keyboard appear
+		noteActivityView.viewTreeObserver.addOnGlobalLayoutListener {
+			val heightDiff =
+					noteActivityView.rootView.height - noteActivityView.height
+			
+			fun myDpToPx(context: Context, valueInDp: Float): Float {
+				val metrics = context.resources.displayMetrics;
+				return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, valueInDp, metrics);
+			}
+			
+			if (heightDiff > myDpToPx(this, 200f)) {
+				Log.d("KeyboardListener", "Keyboard appear!")
+				
+				keyboardSupportLayout.visibility = View.VISIBLE
+			}
+			else {
+				Log.d("KeyboardListener", "Keyboard dismiss!")
+				
+				keyboardSupportLayout.visibility = View.GONE
+				
+			}
+		}
+		
+		// We need to know what EditText is using
+		titleText.setOnClickListener {
+			lastFocusedEditText = titleText
+		}
+		
+		tagText.setOnClickListener {
+			lastFocusedEditText = tagText
+		}
+		
+		contentText.setOnClickListener {
+			lastFocusedEditText = contentText
+		}
+		
+		val indentButton : View = findViewById(R.id.indentButton)
+		indentButton.setOnClickListener {
+			lastFocusedEditText?.apply {
+				val currentCursorPosition = selectionStart
+				text.insert(currentCursorPosition, "    ");
+			}
+			
+		}
+	}
 }

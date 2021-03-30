@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/noteRootLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    >
 
     <ScrollView
         android:id="@+id/noteScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/_34sdp"
+        >
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -186,5 +190,6 @@
 
     </ScrollView>
 
+    <include layout="@layout/keyboard_support_layout"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
